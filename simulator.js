@@ -30,7 +30,7 @@ function decimalToBinary(number) {
         const posMemory1 = binaryToDecimal(direction1);
         const posMemory2 = binaryToDecimal(direction2);
         let result;
-        switch (operation) {
+        switch (binaryToDecimal(operation)) {
 
             case 1:
                 //  AC <- MEM[DIR1]
