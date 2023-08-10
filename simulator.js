@@ -4,9 +4,10 @@ var ac = 0;
 
 function parseInstruction(instruction) {
     return {
-        operation: instruction.slice(0, 4),
-        direction1: instruction.slice(4, 15),
-        direction2: instruction.slice(15, 26)
+        operation: instruction.slice(0, 6),
+        operator: instruction.slice(6, 10),
+        direction1: instruction.slice(10, 21),
+        direction2: instruction.slice(21, 32)
     }
 }
 
@@ -24,12 +25,34 @@ function decimalToBinary(number) {
     return binary;
 }
 
+function doOperation(num1, num2, operator){
+    switch(operator){
+        case 0:
+            return num1 == num2
+        case 1: 
+            return num1 > num2
+        case 2:
+            return num1 < num2 
+        case 3:
+            return num1 >= num2
+        case 4: 
+            return num1 <= num2
+        case 5:
+            return num1 != num2
+    }   
+}
 (() => {
+    let jump;
     for (position of Object.keys(instructions)) {
-        const { operation, direction1, direction2 } = parseInstruction(instructions[position])
+        const { operation, operator, direction1, direction2 } = parseInstruction(instructions[position])
+        if (jump && jump != position){
+            continue;
+        }
+        jump = undefined;
         const posMemory1 = binaryToDecimal(direction1);
         const posMemory2 = binaryToDecimal(direction2);
         let result;
+
         switch (binaryToDecimal(operation)) {
 
             case 1:
@@ -63,11 +86,11 @@ function decimalToBinary(number) {
                 break;
             case 8:
                 // AC <- E/S[DIR1]
-                ac = io[binaryToDecimal(direction1)]
+                ac = binaryToDecimal(io[binaryToDecimal(direction1)])
                 break;
             case 9:
                 // E/S[DIR1] <- AC
-                io[binaryToDecimal(direction1)] = ac
+                io[binaryToDecimal(direction1)] = decimalToBinary(ac)
                 break;
             case 10:
                 // MEM[DIR1] <- MEM[DIR1] + MEM[DIR2]
@@ -89,6 +112,11 @@ function decimalToBinary(number) {
                 result = ac / binaryToDecimal(memory[posMemory1])
                 memory[posMemory2] = decimalToBinary(result)
                 break;
+            case 14:
+                // AC {operator} MEM[DIR1]
+                if (doOperation(ac, binaryToDecimal(memory[posMemory1]), binaryToDecimal(operator))){
+                    jump = posMemory2.toString()
+                }
             default:
                 break;
         }
